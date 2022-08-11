@@ -30,13 +30,13 @@ char *format_send_str()
     return send_str;
 }
 
-void *format_hardware_str(char *device_id, char *burn_date, char *flow_id)
+void format_hardware_str(char *device_id, char *burn_date, char *flow_id)
 {
     cJSON *hw_cjson;
     hw_cjson = cJSON_CreateObject();
-    cJSON_AddItemToObject(hw_cjson, "device_id",device_id);
-    cJSON_AddItemToObject(hw_cjson,"burn_date",burn_date);
-    cJSON_AddItemToObject(hw_cjson,"flow_id",flow_id);
+    cJSON_AddItemToObject(hw_cjson, "device_id",cJSON_CreateString(device_id));
+    cJSON_AddItemToObject(hw_cjson,"burn_date",cJSON_CreateString(burn_date));
+    cJSON_AddItemToObject(hw_cjson,"flow_id",cJSON_CreateString(flow_id));
     char *hardware_str;
     hardware_str = cJSON_PrintUnformatted(hw_cjson);
     printf("hardware_str is:%s\n",hardware_str);

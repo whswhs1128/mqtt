@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "pthread.h"
+#include <unistd.h>
 
 #define HOST_IP "192.168.1.104"
 const int PORT = 1777;
@@ -16,9 +17,9 @@ int flow_id_flag;
 int sockfd;
 struct sockaddr_in serverAddr;
 char *buf;
+void format_hardware_str();
 
-
-void udp_send_thread() {
+void *udp_send_thread() {
     while(!(device_id_flag && date_flag && flow_id_flag)) {
         if(!device_id_flag) {
             memset(buf,0,strlen(buf));
@@ -45,12 +46,13 @@ void udp_send_thread() {
 char *device_id;
 char *burn_date;
 char *flow_id;
-void udp_recv_thread() {
+void *udp_recv_thread() {
 
     while (!(device_id_flag && date_flag && flow_id_flag))
     {
         memset(buf,0,strlen(buf));
-        recvfrom(sockfd,buf,sizeof(buf),0,(struct sockaddr*)&serverAddr,sizeof(serverAddr));
+	socklen_t len = sizeof(serverAddr);
+        recvfrom(sockfd,buf,sizeof(buf),0,(struct sockaddr*)&serverAddr,&len);
         int length = strlen(buf);
         if(length == 8) {
             strcpy(burn_date, buf);

@@ -27,7 +27,8 @@ char *format_send_str();
 void json_file_write();
 char *json_file_read();
 int get_burning_info_from_file();
-void *format_hardware_str(char *device_id, char *burn_date, char *flow_id);
+void format_hardware_str(char *device_id, char *burn_date, char *flow_id);
+void start_udp_client();
 
 void mqtt_data_rx_cb(void *pbuf, int len);
 void parse_rx_data(void *pbuf);
