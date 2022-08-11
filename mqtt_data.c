@@ -48,18 +48,23 @@ int get_burning_info_from_file()
     char *rd_burn_file;
     cJSON *cjson_tmp = NULL;
     rd_burn_file = json_file_read(HW_JS_INFO);
-    
-    if(rd_burn_file == NULL) {
-        return 0;
+    printf("rd_burn_file is %s\n",rd_burn_file);
+    if(strlen(rd_burn_file) == 0) {
+	    cJSON_Delete(cjson_tmp);
+	    return 0;
     }
 
     cjson_tmp = cJSON_Parse(rd_burn_file);
     char *device_id;
-    device_id = cJSON_GetObjectItem(cjson_tmp, device_id)->valuestring;
-    if(device_id == NULL) {
+    device_id = malloc(20);
+    if(cJSON_GetObjectItem(cjson_tmp, "device_id") == NULL) return 0;
+    device_id = cJSON_GetObjectItem(cjson_tmp, "device_id")->valuestring;
+    if(strlen(device_id) == 0) {
+	cJSON_Delete(cjson_tmp);
         return 0;
     }
 
+    cJSON_Delete(cjson_tmp);
     return 1;
 }
 
@@ -73,7 +78,7 @@ char *read_token_from_hardware()
     char *access_token;
     char *file_read = json_file_read(HW_JS_INFO);
     cJSON *file_cjson = cJSON_Parse(file_read);
-    access_token = cJSON_GetObjectItem(file_cjson,access_token)->valuestring;
+    access_token = cJSON_GetObjectItem(file_cjson,"access_token")->valuestring;
     return access_token;
 }
 
@@ -85,7 +90,7 @@ void parse_rx_data(void *pbuf)
     rx_cjson = cJSON_Parse(pbuf);
     cjson_params = cJSON_GetObjectItem(rx_cjson, "params");
     char *activate_state;
-    activate_state = cJSON_GetObjectItem(cjson_params,activate_state)->valuestring;
+    activate_state = cJSON_GetObjectItem(cjson_params,"activate_state")->valuestring;
     cJSON_Delete(rx_cjson);
     return;
 }
@@ -95,7 +100,7 @@ char *json_file_read(char *filename)
     FILE *f;
     long len;
 
-    f = fopen(filename,"rb");
+    f = fopen(filename,"rb+");
     if(f == NULL) {
         printf("file open fail.\n");
         return NULL;
@@ -106,7 +111,7 @@ char *json_file_read(char *filename)
     file_read_data = (char*)malloc(len+1);
     fread(file_read_data, 1, len, f);
     fclose(f);
-    parse_rx_data(file_read_data);
+//    parse_rx_data(file_read_data);
     return file_read_data;
 }
 
