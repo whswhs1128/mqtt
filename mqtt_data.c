@@ -25,9 +25,9 @@ char *formate_productid()
     rd_burn_file = json_file_read(HW_JS_INFO);
 
     cjson_tmp = cJSON_Parse(rd_burn_file);
-    // char *burn_date;
-    // burn_date = malloc(9);
-    char burn_date[9];
+    char *burn_date;
+    burn_date = malloc(9);
+    //char burn_date[9];
     if(cJSON_GetObjectItem(cjson_tmp, "burn_date") == NULL) return NULL;
     burn_date = cJSON_GetObjectItem(cjson_tmp, "burn_date")->valuestring;
     char *burn_date_short;
@@ -79,10 +79,10 @@ int get_activate_state()
     cjson_tmp = cJSON_Parse(rd_file);
     // char *burn_date;
     // burn_date = malloc(9);
-    char activate_state[2];
-    if(cJSON_GetObjectItem(cjson_tmp, "activate_state") == NULL) return NULL;
+    char *activate_state;
+    if(cJSON_GetObjectItem(cjson_tmp, "activate_state") == NULL) return 0;
     activate_state = cJSON_GetObjectItem(cjson_tmp, "activate_state")->valuestring;
-    return activate_state;
+    return 1;
 }
 
 char *format_first_init()

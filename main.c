@@ -29,14 +29,14 @@ int main(int argc, char *argv[])
 
 
     while (1) {
-		if(strcmp(get_activate_state(), "0")) {
-			send_str = format_first_init();
-		} else {
-			send_str = format_heartbeat_str();
-		}
-			mqtt_data_write(send_str, strlen(send_str), 0);
-			memset(send_str,0,strlen(send_str));
-	    	sleep(10);
+	    if(!get_activate_state()) {
+		    send_str = format_first_init();
+	    } else {
+		    send_str = format_heartbeat_str();
+	    }
+	    mqtt_data_write(send_str, strlen(send_str), 0);
+	    memset(send_str,0,strlen(send_str));
+	    sleep(10);
     }
 
     return 0;

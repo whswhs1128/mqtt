@@ -29,7 +29,6 @@
 #define MQTT_PASS "cec123"			//密码
 #define MQTT_CLIENT_ID "17849359"		//客户端标识
 
-char *get_device_token();
 char *read_token_from_hardware();
 typedef struct {
     Network Network;
@@ -80,7 +79,6 @@ void iot_mqtt_init(Cloud_MQTT_t *piot_mqtt)
 {
     memset(piot_mqtt, '\0', sizeof(Cloud_MQTT_t));
 
-    char *device_token = get_device_token();
     //sprintf(piot_mqtt->sub_topic, "%s%s/todev", gateway.model, gateway.company);	//将初始化好的订阅主题填到数组中
     sprintf(piot_mqtt->sub_topic, "v1/devices/me/rpc/response/+");	//将初始化好的订阅主题填到数组中
     printf("subscribe:%s\n", piot_mqtt->sub_topic);
@@ -128,8 +126,8 @@ int mqtt_device_connect(Cloud_MQTT_t *piot_mqtt)
     }
     data.MQTTVersion = 3;
     data.clientID.cstring = MQTT_CLIENT_ID;
-    data.username.cstring = MQTT_USER;
-    //data.username.cstring = read_token_from_hardware();
+//    data.username.cstring = MQTT_USER;
+    data.username.cstring = read_token_from_hardware();
     data.password.cstring = MQTT_PASS;
     data.keepAliveInterval = 30;
     data.cleansession = 1;
