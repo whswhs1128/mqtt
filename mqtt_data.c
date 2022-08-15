@@ -16,14 +16,105 @@ char *json_file_read();
 
 #define HW_JS_INFO "hardware.json"
 #define MEM_JS_INFO "memory.json"
-char *format_send_str()
+#define PRODUCT_HEAD "CEC0-AS0000-"
+
+char *formate_productid()
 {
+    char *rd_burn_file;
+    cJSON *cjson_tmp = NULL;
+    rd_burn_file = json_file_read(HW_JS_INFO);
+
+    cjson_tmp = cJSON_Parse(rd_burn_file);
+    // char *burn_date;
+    // burn_date = malloc(9);
+    char burn_date[9];
+    if(cJSON_GetObjectItem(cjson_tmp, "burn_date") == NULL) return NULL;
+    burn_date = cJSON_GetObjectItem(cjson_tmp, "burn_date")->valuestring;
+    char *burn_date_short;
+    burn_date_short = malloc(7);
+    burn_date_short = &burn_date[2];
+
+    char *flow_id;
+    flow_id = malloc(4);
+    char *flow_id_long;
+    flow_id_long = malloc(7);
+    if(cJSON_GetObjectItem(cjson_tmp, "flow_id") == NULL) return NULL;
+    flow_id = cJSON_GetObjectItem(cjson_tmp, "flow_id")->valuestring;
+    switch(strlen(flow_id)) {
+        case 1:
+            sprintf(flow_id_long, "00000%s",flow_id);
+            break;
+        case 2:
+            sprintf(flow_id_long, "0000%s",flow_id);
+            break;
+        case 3:
+            sprintf(flow_id_long, "000%s",flow_id);
+            break;
+        case 4:
+            sprintf(flow_id_long, "00%s",flow_id);
+            break;
+        case 5:
+            sprintf(flow_id_long, "0%s",flow_id);
+            break;
+    }
+
+    char *product_id;
+    product_id = malloc(26);
+    strcpy(product_id, PRODUCT_HEAD);
+    strcat(product_id, burn_date_short);
+    strcat(product_id, "-");
+    strcat(product_id, flow_id_long);
+    printf("formate_productid is %s\n",product_id);
+    return product_id;
+
+}
+
+
+int get_activate_state()
+{
+    char *rd_file;
+    cJSON *cjson_tmp = NULL;
+    rd_file = json_file_read(MEM_JS_INFO);
+
+    cjson_tmp = cJSON_Parse(rd_file);
+    // char *burn_date;
+    // burn_date = malloc(9);
+    char activate_state[2];
+    if(cJSON_GetObjectItem(cjson_tmp, "activate_state") == NULL) return NULL;
+    activate_state = cJSON_GetObjectItem(cjson_tmp, "activate_state")->valuestring;
+    return activate_state;
+}
+
+char *format_first_init()
+{
+    char *product_id;
+    product_id = malloc(26);
+    product_id = formate_productid();
+    
     tx_cjson = cJSON_CreateObject();
     cJSON_AddItemToObject(tx_cjson, "method",cJSON_CreateString("init"));
     cJSON *params_cjson;
     params_cjson = cJSON_CreateObject();
     cJSON_AddItemToObject(params_cjson,"activate_state",cJSON_CreateNumber(0));
-    cJSON_AddItemToObject(params_cjson,"pub",cJSON_CreateNumber(0));
+    cJSON_AddItemToObject(params_cjson,"productId",cJSON_CreateString(product_id));
+    cJSON_AddItemToObject(tx_cjson,"params",params_cjson);
+    send_str = cJSON_PrintUnformatted(tx_cjson);
+    printf("str is:%s\n",send_str);
+    return send_str;
+}
+
+char *format_heartbeat_str()
+{
+    char *product_id;
+    product_id = malloc(26);
+    product_id = formate_productid();
+    
+    tx_cjson = cJSON_CreateObject();
+    cJSON_AddItemToObject(tx_cjson, "method",cJSON_CreateString("init-finished"));
+    cJSON *params_cjson;
+    params_cjson = cJSON_CreateObject();
+    cJSON_AddItemToObject(params_cjson,"activate_state",cJSON_CreateNumber(1));
+    cJSON_AddItemToObject(params_cjson,"productId",cJSON_CreateString(product_id));
     cJSON_AddItemToObject(tx_cjson,"params",params_cjson);
     send_str = cJSON_PrintUnformatted(tx_cjson);
     printf("str is:%s\n",send_str);
@@ -68,17 +159,13 @@ int get_burning_info_from_file()
     return 1;
 }
 
-char *get_device_token()
-{
-    return device_token;
-}
 
 char *read_token_from_hardware()
 {
     char *access_token;
     char *file_read = json_file_read(HW_JS_INFO);
     cJSON *file_cjson = cJSON_Parse(file_read);
-    access_token = cJSON_GetObjectItem(file_cjson,"access_token")->valuestring;
+    access_token = cJSON_GetObjectItem(file_cjson,"device_id")->valuestring;
     return access_token;
 }
 
@@ -88,6 +175,9 @@ void parse_rx_data(void *pbuf)
     cJSON *cjson_params = NULL;
     printf("parse_rx_data = %s\n", (unsigned char *)pbuf);
     rx_cjson = cJSON_Parse(pbuf);
+    
+    json_file_write(MEM_JS_INFO, pbuf);
+
     cjson_params = cJSON_GetObjectItem(rx_cjson, "params");
     char *activate_state;
     activate_state = cJSON_GetObjectItem(cjson_params,"activate_state")->valuestring;
