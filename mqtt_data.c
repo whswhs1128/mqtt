@@ -190,7 +190,7 @@ char *json_file_read(char *filename)
     FILE *f;
     long len;
 
-    f = fopen(filename,"rb+");
+    f = fopen(filename,"w+");
     if(f == NULL) {
         printf("file open fail.\n");
         return NULL;
