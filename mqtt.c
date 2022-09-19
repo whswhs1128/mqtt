@@ -248,7 +248,7 @@ int mqtt_data_write(char *pbuf)
     //printf("publish topic is :%s\r\n", my_topic);
 
     message.payload = (void *)pbuf;
-    message.payloadlen = len(pbuf);
+    message.payloadlen = strlen(pbuf);
     message.dup = 0;
     message.qos = QOS2;
     message.retained = 0;
@@ -271,7 +271,7 @@ int mqtt_data_write_with_topic(char *pbuf, char *topic)
     //printf("publish topic is :%s\r\n", my_topic);
 
     message.payload = (void *)pbuf;
-    message.payloadlen = len(pbuf);
+    message.payloadlen = strlen(pbuf);
     message.dup = 0;
     message.qos = QOS2;
     message.retained = 0;

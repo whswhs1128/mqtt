@@ -40,7 +40,7 @@ void request_software_info() {
     strcpy(topic, TOPIC_HEAD);
     strcat(topic, request_id);
     mqtt_data_write_with_topic(tx_cjson, topic);
-    memset(send_str_s, 0, len(send_str_s));
+    memset(send_str_s, 0, strlen(send_str_s));
 }
 
 void on_connect() {
@@ -49,7 +49,7 @@ void on_connect() {
     cJSON_AddItemToObject(current_software_info, "current_sw_version",cJSON_CreateString("v0"));
     send_str_s = cJSON_PrintUnformatted(current_software_info);
     mqtt_data_write(send_str_s);
-    memset(send_str_s, 0, len(send_str_s));
+    memset(send_str_s, 0, strlen(send_str_s));
     request_software_info();
 }
 
@@ -62,7 +62,7 @@ void get_software() {
     strcat(topic, "/chunk/");
     strcat(topic, current_chunk);
     mqtt_data_write_with_topic(send_str_s, topic);
-    memset(send_str_s, 0, len(send_str_s));
+    memset(send_str_s, 0, strlen(send_str_s));
 }
 
 void on_message_data(void *pbuf) {
@@ -73,13 +73,13 @@ void on_message_data(void *pbuf) {
     !strcmp(cJSON_GetObjectItem(software_info,"sw_version")->valuestring, cJSON_GetObjectItem(current_software_info,"sw_version")->valuestring)==0
     ) {
         printf("Software is not the same\n");
-        memset(software_data, 0, len(software_data));
+        memset(software_data, 0, strlen(software_data));
         current_chunk = 0;
         cJSON_AddItemToObject(current_software_info, SW_STATE_ATTR,cJSON_CreateString("DOWNLOADING"));
         send_str_s = cJSON_PrintUnformatted(current_software_info);
         mqtt_data_write(send_str_s);
         sleep(1);
-        memset(send_str_s, 0, len(send_str_s));
+        memset(send_str_s, 0, strlen(send_str_s));
 
         software_request_id++;
         target_software_length = cJSON_GetObjectItem(software_info,"sw_size")->valueint;
@@ -91,13 +91,13 @@ void on_message_data(void *pbuf) {
 int verify_checksum(char *software_data, char *checksum_alg, char *checksum) {
     char *md5_str;
     md5_str = malloc(32);
-    if (len(software_data) == 0) 
+    if (strlen(software_data) == 0) 
     {
         printf("Software wasn't received!\n");
         return 0;
     }
 
-    if (len(checksum) == 0)
+    if (strlen(checksum) == 0)
     {   
         printf("checksum wasn't provided!\n");
         return 0;
@@ -110,7 +110,7 @@ int verify_checksum(char *software_data, char *checksum_alg, char *checksum) {
     }
     
     
-    Compute_data_md5(software_data, len(software_data), md5_str);
+    Compute_data_md5(software_data, strlen(software_data), md5_str);
     printf("compute md5 is %s\n",md5_str);
     if(strcmp(checksum, md5_str) == 0)return 1;
 
@@ -121,18 +121,18 @@ void process_software() {
     send_str_s = cJSON_PrintUnformatted(current_software_info);
     mqtt_data_write(send_str_s);
     sleep(1);
-    memset(send_str_s, 0, len(send_str_s));
+    memset(send_str_s, 0, strlen(send_str_s));
     int verification_result;
     verification_result = verify_checksum(software_data,cJSON_GetObjectItem(software_info,SW_CHECKSUM_ALG_ATTR)->valuestring, 
                                                         cJSON_GetObjectItem(software_info,SW_CHECKSUM_ATTR)->valuestring);
 
-    IF(verification_result) {
+    if(verification_result) {
         printf("Checksum verified!\n");
         cJSON_ReplaceItemInObject(current_software_info, SW_STATE_ATTR, cJSON_CreateString("VERIFIED"));
         send_str_s = cJSON_PrintUnformatted(current_software_info);
         mqtt_data_write(send_str_s);
         sleep(1);
-        memset(send_str_s, 0, len(send_str_s));
+        memset(send_str_s, 0, strlen(send_str_s));
         software_received = 1;
     } else {
         printf("Checksum verification failed!\n");
@@ -140,18 +140,18 @@ void process_software() {
         send_str_s = cJSON_PrintUnformatted(current_software_info);
         mqtt_data_write(send_str_s);
         sleep(1);
-        memset(send_str_s, 0, len(send_str_s));
+        memset(send_str_s, 0, strlen(send_str_s));
         request_software_info();
     }
 }
 
 void on_message_bin(void *pbuf) {
     char *software_data_tmp;
-    software_data_tmp = malloc(len(pbuf));
+    software_data_tmp = malloc(strlen(pbuf));
     strcpy(software_data_tmp, pbuf);
     strcpy(software_data, software_data_tmp);
     current_chunk++;
-    if (len(software_data) == target_software_length)
+    if (strlen(software_data) == target_software_length)
     {
         process_software();
     } else {
@@ -169,7 +169,7 @@ void *update_thread() {
             send_str_s = cJSON_PrintUnformatted(current_software_info);
             mqtt_data_write(send_str_s);
             sleep(1);
-            memset(send_str_s, 0, len(send_str_s));
+            memset(send_str_s, 0, strlen(send_str_s));
 
             char *filename;
             filename = cJSON_GetObjectItem(software_info,SW_TITLE_ATTR)->valuestring;
@@ -183,7 +183,7 @@ void *update_thread() {
             cJSON_AddItemToObject(current_software_info, "current_sw_version",cJSON_GetObjectItem(software_info,SW_VERSION_ATTR)->valuestring);
             send_str_s = cJSON_PrintUnformatted(current_software_info);
             mqtt_data_write(send_str_s);
-            memset(send_str_s, 0, len(send_str_s));
+            memset(send_str_s, 0, strlen(send_str_s));
             software_received = 0;
             sleep(1);
         }

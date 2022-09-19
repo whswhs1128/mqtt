@@ -7,7 +7,7 @@ CFLAGS 		= -Os
 
 IOT_OBJS 	= $(wildcard $(SRC_PATH)/*.c $(SRC_PATH)/MQTTPacket/*.c)
 
-targets = mqtt_demo
+targets = mqtt_ota_demo
 
 
 LINC 	+= -I$(PWD)/MQTTPacket
