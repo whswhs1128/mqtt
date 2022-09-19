@@ -18,26 +18,11 @@ char *send_str;
 int main(int argc, char *argv[])
 {
     pthread_t thread_ID;
-    while(!get_burning_info_from_file()) {
-	    printf("before start..\n");
-	    start_udp_client();
-	    sleep(3);
-    }
-
     pthread_create(&thread_ID, NULL, &cloud_mqtt_thread, NULL);
     pthread_detach(thread_ID);
 
-
-    while (1) {
-	    if(!get_activate_state()) {
-		    send_str = format_first_init();
-	    } else {
-		    send_str = format_heartbeat_str();
-	    }
-	    mqtt_data_write(send_str, strlen(send_str), 0);
-	    memset(send_str,0,strlen(send_str));
-	    sleep(10);
-    }
-
+	init_software_client();
+	
+    while(1);
     return 0;
 }

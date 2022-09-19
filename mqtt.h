@@ -2,7 +2,7 @@
 	> File Name: matt.h
 	> Author: 
 	> Mail: 
-	> Created Time: 2018å¹?09æœ?05æ—? æ˜ŸæœŸä¸? 16æ—?40åˆ?31ç§?
+	> Created Time: 2018???09???05?¡ª? ????????? 16?¡ª?40???31?¡ì?
  ************************************************************************/
 
 #ifndef NET_PROC_H
@@ -22,7 +22,8 @@ enum  iot_ctrl_status_t
 typedef void  (*pMessageArrived_Fun)(void*,int len);
 
 void mqtt_module_init(void);
-int mqtt_data_write(char *pbuf, int len, char retain);
+int mqtt_data_write(char *pbuf);
+int mqtt_data_write_with_topic(char *pbuf, char *topic);
 char *format_send_str();
 void json_file_write();
 char *json_file_read();
