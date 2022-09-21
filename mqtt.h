@@ -22,6 +22,7 @@ enum  iot_ctrl_status_t
 typedef void  (*pMessageArrived_Fun)(void*,int len);
 
 void mqtt_module_init(void);
+void init_software_client();
 int mqtt_data_write(char *pbuf);
 int mqtt_data_write_with_topic(char *pbuf, char *topic);
 char *format_send_str();
@@ -35,6 +36,10 @@ char *format_first_init();
 char *format_heartbeat_str();
 
 void mqtt_data_rx_cb(void *pbuf, int len);
+void mqtt_data_rx_bin(void *pbuf, int len);
+void mqtt_data_rx_data(void *pbuf, int len);
+void on_message_bin(void *pbuf);
+void on_message_data(void *pbuf);
 void parse_rx_data(void *pbuf);
 void *cloud_mqtt_thread(void *arg);
 #define mDEBUG(fmt, ...)  printf("%s[%s](%d):" fmt,__FILE__,__FUNCTION__,__LINE__,##__VA_ARGS__)

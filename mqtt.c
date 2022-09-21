@@ -23,9 +23,11 @@
 #define MQTT_TOPIC_SIZE     (128)		//订阅和发布主题长度
 #define MQTT_BUF_SIZE       (8 * 1024) 	//接收后发送缓冲区大小
 
+//#define MQTT_HOST "192.168.1.20"		//ip地址
 #define MQTT_HOST "10.41.10.37"		//ip地址
 #define MQTT_PORT 1883					//端口号
-#define MQTT_USER "ommlJRJODQeeVSyVmIaw"				//用户名
+//#define MQTT_USER "JDwski43V8tuNkZHVn2L"				//用户名
+#define MQTT_USER "0eQo1wxhO9YEKMQf83X4"				//用户名
 #define MQTT_PASS "cec123"			//密码
 #define MQTT_CLIENT_ID "17849359"		//客户端标识
 
@@ -79,7 +81,7 @@ void iot_mqtt_init(Cloud_MQTT_t *piot_mqtt)
 {
     memset(piot_mqtt, '\0', sizeof(Cloud_MQTT_t));
 
-    sprintf(piot_mqtt->sub_topic, "v1/devices/me/attributes/+");	//将初始化好的订阅主题填到数组中
+    sprintf(piot_mqtt->sub_topic, "v1/devices/me/attributes/response/+");	//将初始化好的订阅主题填到数组中
     printf("subscribe:%s\n", piot_mqtt->sub_topic);
 
     sprintf(piot_mqtt->pub_topic, "v1/devices/me/telemetry");	//将初始化好的发布主题填到数组中
@@ -105,9 +107,8 @@ void MQTTMessageArrived_Cb_new(MessageData* md)
 
     Cloud_MQTT_t *piot_mqtt = &Iot_mqtt;
 
-    if (NULL != piot_mqtt->DataArrived_Cb) {
-        mqtt_data_rx_bin((void *)message->payload, message->payloadlen);//异步消息体
-    }
+    printf("cb_new......\n");
+    mqtt_data_rx_bin((void *)message->payload, message->payloadlen);//异步消息体
 }
 
 int mqtt_device_connect(Cloud_MQTT_t *piot_mqtt)
@@ -116,7 +117,7 @@ int mqtt_device_connect(Cloud_MQTT_t *piot_mqtt)
 
     NewNetwork(&piot_mqtt->Network);
 
-    printf("topic = %s\n", piot_mqtt->sub_topic);
+    //printf("topic = %s\n", piot_mqtt->sub_topic);
 
     rc = ConnectNetwork(&piot_mqtt->Network, MQTT_HOST, (int)MQTT_PORT);	
     if (rc != 0) {
@@ -135,11 +136,11 @@ int mqtt_device_connect(Cloud_MQTT_t *piot_mqtt)
     }
     data.MQTTVersion = 3;
     data.clientID.cstring = MQTT_CLIENT_ID;
-//    data.username.cstring = MQTT_USER;
-    data.username.cstring = read_token_from_hardware();
+    data.username.cstring = MQTT_USER;
+//    data.username.cstring = read_token_from_hardware();
     data.password.cstring = MQTT_PASS;
     data.keepAliveInterval = 30;
-    data.cleansession = 1;
+    data.cleansession = 0;
     
     rc = MQTTConnect(&piot_mqtt->Client, &data);
     if (rc) {
@@ -148,8 +149,7 @@ int mqtt_device_connect(Cloud_MQTT_t *piot_mqtt)
         ret = -102;
         goto __END;
     }
-    on_connect();
-    rc = MQTTSubscribe(&piot_mqtt->Client, piot_mqtt->sub_topic, 2, MQTTMessageArrived_Cb);
+    rc = MQTTSubscribe(&piot_mqtt->Client, piot_mqtt->sub_topic, 0, MQTTMessageArrived_Cb);
     if (rc) {
         printf("mqtt subscribe fail \n");
         ret = -105;
@@ -157,12 +157,13 @@ int mqtt_device_connect(Cloud_MQTT_t *piot_mqtt)
     }
 
 // 第二主题订阅
-    rc = MQTTSubscribe(&piot_mqtt->Client, "v2/sw/response/+", 2, MQTTMessageArrived_Cb_new);
+    rc = MQTTSubscribe(&piot_mqtt->Client, "v2/sw/response/+/chunk/+", 1, MQTTMessageArrived_Cb_new);
     if (rc) {
         printf("mqtt subscribe second topic fail \n");
         ret = -105;
         goto __END;
     }
+    //on_connect();
     gateway.iotstatus = IOT_STATUS_CONNECT;
     printf("Subscribed %d\n", rc);
 
@@ -221,18 +222,20 @@ int mqtt_will_msg_set(Cloud_MQTT_t *piot_mqtt, char *pbuf, int len)//设置遗�
     Iot_mqtt.will.retained = 1;
     Iot_mqtt.will.topicName.cstring = (char *)piot_mqtt->will_topic;
     Iot_mqtt.will.message.cstring = (char *)pbuf;
-    Iot_mqtt.will.qos = QOS2;
+    Iot_mqtt.will.qos = QOS1;
 
 }
 
 void mqtt_data_rx_cb(void *pbuf, int len) 
 {
-    on_message_data(pbuf);
+    printf("rx_cb is %s\n",pbuf);
+	on_message_data(pbuf);
 }
 
 // 接收二进制回调函数
 void mqtt_data_rx_bin(void *pbuf, int len) 
 {
+    printf("rx_cb_bin is %s\n",pbuf);
     on_message_bin(pbuf);
 }
 
@@ -245,12 +248,13 @@ int mqtt_data_write(char *pbuf)
 
     strcpy(my_topic, piot_mqtt->pub_topic);
 
-    //printf("publish topic is :%s\r\n", my_topic);
+    printf("publish message is %s\n",pbuf);
+    printf("publish topic is :%s\r\n", my_topic);
 
     message.payload = (void *)pbuf;
     message.payloadlen = strlen(pbuf);
     message.dup = 0;
-    message.qos = QOS2;
+    message.qos = QOS0;
     message.retained = 0;
 
 
@@ -268,12 +272,13 @@ int mqtt_data_write_with_topic(char *pbuf, char *topic)
 
     //strcpy(my_topic, piot_mqtt->pub_topic);
 
-    //printf("publish topic is :%s\r\n", my_topic);
+    printf("publish message is %s\n",pbuf);
+    printf("publish topic is :%s\r\n", topic);
 
     message.payload = (void *)pbuf;
     message.payloadlen = strlen(pbuf);
     message.dup = 0;
-    message.qos = QOS2;
+    message.qos = QOS0;
     message.retained = 0;
 
     ret = MQTTPublish(&piot_mqtt->Client, topic, &message);	//发布一个主题
@@ -287,7 +292,7 @@ void *cloud_mqtt_thread(void *arg)
     char will_msg[256] = {"hello world"};						//初始化遗嘱数据
     
     iot_mqtt_init(&Iot_mqtt);									//初始化主题
-    mqtt_will_msg_set(&Iot_mqtt, will_msg, strlen(will_msg));	//设置遗嘱
+//    mqtt_will_msg_set(&Iot_mqtt, will_msg, strlen(will_msg));	//设置遗嘱
 
     ret = mqtt_device_connect(&Iot_mqtt);						//初始化并连接mqtt服务器
     while (ret < 0) {
