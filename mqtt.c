@@ -83,10 +83,10 @@ void iot_mqtt_init(Cloud_MQTT_t *piot_mqtt)
     memset(piot_mqtt, '\0', sizeof(Cloud_MQTT_t));
 
     sprintf(piot_mqtt->sub_topic, "v1/devices/me/attributes/response/+");	//将初始化好的订阅主题填到数组中
-    printf("subscribe:%s\n", piot_mqtt->sub_topic);
+    //printf("subscribe:%s\n", piot_mqtt->sub_topic);
 
     sprintf(piot_mqtt->pub_topic, "v1/devices/me/telemetry");	//将初始化好的发布主题填到数组中
-    printf("pub:%s\n", piot_mqtt->pub_topic);
+    //printf("pub:%s\n", piot_mqtt->pub_topic);
 
     piot_mqtt->DataArrived_Cb = mqtt_data_rx_cb;		//设置接收到数据回调函数
 
@@ -157,13 +157,12 @@ int mqtt_device_connect(Cloud_MQTT_t *piot_mqtt)
     }
 
 // 第二主题订阅
-    rc = MQTTSubscribe(&piot_mqtt->Client, "v2/sw/response/+/chunk/+", 1, MQTTMessageArrived_Cb_new);
+    rc = MQTTSubscribe(&piot_mqtt->Client, "v2/sw/response/+/chunk/+", 0, MQTTMessageArrived_Cb_new);
     if (rc) {
         printf("mqtt subscribe second topic fail \n");
         ret = -105;
         goto __END;
     }
-    //on_connect();
     gateway.iotstatus = IOT_STATUS_CONNECT;
     printf("Subscribed %d\n", rc);
 
@@ -237,23 +236,15 @@ void mqtt_data_rx_bin(void *pbuf, int len)
 	unsigned char tmp[len];
 	memcpy(tmp, pbuf, len);
 
-	char *test;
-	test = malloc(len * 2);
-	char *tmp_str;
-	tmp_str = malloc(4);
 	int i;
 	FILE * fp;
 	fp = fopen ("tmpfile", "w+");
 	for(i =0; i< len; i++) {
-//		sprintf(tmp_str, "%c",tmp[i]);
-//		strcat(test,tmp_str);
 		fprintf(fp,"%c",tmp[i]);
 	}
 	fclose(fp);
-	//system("chmod 777 tmpfile");
-//	printf("test is %s\n",test);
 
-	on_message_bin(test);
+	on_message_bin();
 }
 
 int mqtt_data_write(char *pbuf)
@@ -289,7 +280,7 @@ int mqtt_data_write_with_topic(char *pbuf, char *topic)
 
     //strcpy(my_topic, piot_mqtt->pub_topic);
 
-//    printf("publish message is %s\n",pbuf);
+//   printf("publish message is %s\n",pbuf);
 //    printf("publish topic is :%s\r\n", topic);
 
     message.payload = (void *)pbuf;

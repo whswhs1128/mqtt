@@ -15,7 +15,7 @@
 #define SW_VERSION_ATTR         "sw_version"
 #define SW_STATE_ATTR           "sw_state"
 #define TOPIC_HEAD              "v1/devices/me/attributes/request/"
-
+#define CURRENT_VERSION		"V1.0.0.0"
 char *send_str_s;
 static int chunk_size;
 static int request_id;
@@ -47,13 +47,16 @@ void request_software_info() {
 }
 
 void on_connect() {
-    current_software_info = cJSON_CreateObject();
-    cJSON_AddItemToObject(current_software_info, "current_sw_title",cJSON_CreateString("Initial"));
-    cJSON_AddItemToObject(current_software_info, "current_sw_version",cJSON_CreateString("v0"));
-    send_str_s = cJSON_PrintUnformatted(current_software_info);
-    mqtt_data_write(send_str_s);
-    send_str_s = "";
-    request_software_info();
+	if(!cJSON_GetArraySize(current_software_info)) {
+		current_software_info = cJSON_CreateObject();
+		cJSON_AddItemToObject(current_software_info, "current_sw_title",cJSON_CreateString("ipc_ota"));
+		cJSON_AddItemToObject(current_software_info, "current_sw_version",cJSON_CreateString(CURRENT_VERSION));
+	}
+	cJSON_DeleteItemFromObject(current_software_info, SW_STATE_ATTR);
+	send_str_s = cJSON_PrintUnformatted(current_software_info);
+	mqtt_data_write(send_str_s);
+	send_str_s = "";
+	request_software_info();
 }
 
 void get_software() {
@@ -61,15 +64,15 @@ void get_software() {
     send_str_s = malloc(10);
     send_str_s = "";
     topic = malloc(25);
-    strcpy(topic, "v2/sw/request/1/chunk/0");
-    //strcpy(topic, "v2/sw/request/");
-    //char *id_tmp;
-    //id_tmp = malloc(16);
-    //sprintf(id_tmp, "%d",software_request_id);
-    //strcat(topic, id_tmp);
-    //strcat(topic, "/chunk/");
-    //sprintf(id_tmp, "%d",current_chunk);
-    //strcat(topic, id_tmp);
+    //strcpy(topic, "v2/sw/request/1/chunk/0");
+    strcpy(topic, "v2/sw/request/");
+    char *id_tmp;
+    id_tmp = malloc(16);
+    sprintf(id_tmp, "%d",software_request_id);
+    strcat(topic, id_tmp);
+    strcat(topic, "/chunk/");
+    sprintf(id_tmp, "%d",current_chunk);
+    strcat(topic, id_tmp);
     mqtt_data_write_with_topic(send_str_s, topic);
     send_str_s = "";
 }
@@ -120,7 +123,7 @@ int verify_checksum(char *software_data, char *checksum_alg, char *checksum) {
     
     
     Compute_file_md5(software_data, md5_str);
-    printf("compute md5 is %s\n",md5_str);
+    //printf("compute md5 is %s\n",md5_str);
     if(strcmp(checksum, md5_str) == 0)return 1;
 
     return 0;
@@ -170,7 +173,8 @@ void process_software() {
         mqtt_data_write(send_str_s);
         sleep(1);
     	send_str_s = "";
-        request_software_info();
+	system("rm tmpfile");
+        //request_software_info();
     }
 }
 
@@ -225,26 +229,30 @@ void *update_thread() {
 	    system("rm tmpfile");
 	    printf("saved file sucess...\n");
 
-            cJSON_Delete(current_software_info);
-            current_software_info = cJSON_CreateObject();
-	    cJSON_AddItemToObject(current_software_info, "current_sw_title",cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_TITLE_ATTR)->valuestring));
-	    cJSON_AddItemToObject(current_software_info, "current_sw_version",cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_VERSION_ATTR)->valuestring));
-            cJSON_AddItemToObject(current_software_info, SW_STATE_ATTR,cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_VERSION_ATTR)->valuestring));
+//            cJSON_Delete(current_software_info);
+//            current_software_info = cJSON_CreateObject();
+	    cJSON_ReplaceItemInObject(current_software_info, "current_sw_title",cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_TITLE_ATTR)->valuestring));
+	    cJSON_ReplaceItemInObject(current_software_info, "current_sw_version",cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_VERSION_ATTR)->valuestring));
+            cJSON_ReplaceItemInObject(current_software_info, SW_STATE_ATTR,cJSON_CreateString("UPDATED"));
             send_str_s = cJSON_PrintUnformatted(current_software_info);
             mqtt_data_write(send_str_s);
     	    send_str_s = "";
             software_received = 0;
             sleep(1);
         }
-       sleep(1);
+       sleep(2);
     }
 }
 
 void init_software_client() {
 
-     on_connect();
+//     on_connect();
     pthread_t thread_ID;
     pthread_create(&thread_ID, NULL, &update_thread, NULL);
     pthread_detach(thread_ID);
 
+    while(1) {
+	on_connect();
+	sleep(60);
+    }
 }
