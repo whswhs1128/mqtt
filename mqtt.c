@@ -21,7 +21,7 @@
 
 
 #define MQTT_TOPIC_SIZE     (128)		//订阅和发布主题长度
-#define MQTT_BUF_SIZE       (1024 * 1024) 	//接收后发送缓冲区大小
+#define MQTT_BUF_SIZE       (2* 1024 * 1024) 	//接收后发送缓冲区大小
 
 //#define MQTT_HOST "192.168.1.20"		//ip地址
 #define MQTT_HOST "10.41.10.37"		//ip地址
@@ -108,7 +108,6 @@ void MQTTMessageArrived_Cb_new(MessageData* md)
 
     Cloud_MQTT_t *piot_mqtt = &Iot_mqtt;
 
-    printf("cb_new......\n");
     mqtt_data_rx_bin((void *)message->payload, message->payloadlen);//异步消息体
 }
 
@@ -229,7 +228,6 @@ int mqtt_will_msg_set(Cloud_MQTT_t *piot_mqtt, char *pbuf, int len)//设置遗�
 
 void mqtt_data_rx_cb(void *pbuf, int len) 
 {
-    printf("rx_cb is %s\n",pbuf);
 	on_message_data(pbuf);
 }
 
@@ -267,8 +265,8 @@ int mqtt_data_write(char *pbuf)
 
     strcpy(my_topic, piot_mqtt->pub_topic);
 
-    printf("publish message is %s\n",pbuf);
-    printf("publish topic is :%s\r\n", my_topic);
+//    printf("publish message is %s\n",pbuf);
+//    printf("publish topic is :%s\r\n", my_topic);
 
     message.payload = (void *)pbuf;
     message.payloadlen = strlen(pbuf);
@@ -291,8 +289,8 @@ int mqtt_data_write_with_topic(char *pbuf, char *topic)
 
     //strcpy(my_topic, piot_mqtt->pub_topic);
 
-    printf("publish message is %s\n",pbuf);
-    printf("publish topic is :%s\r\n", topic);
+//    printf("publish message is %s\n",pbuf);
+//    printf("publish topic is :%s\r\n", topic);
 
     message.payload = (void *)pbuf;
     message.payloadlen = strlen(pbuf);

@@ -219,7 +219,7 @@ int Compute_file_md5(const char *file_path, char *md5_str)
   MD5_CTX md5;
 
   fd = fopen(file_path, "rb");
-  if (-1 == fd)
+  if (fd < 0)
   {
     perror("open");
     return -1;

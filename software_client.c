@@ -30,7 +30,6 @@ static int current_chunk;
 static int software_received;
 
 void request_software_info() {
-	printf("request_software_info enter...\n");
     request_id++;
     cJSON *tx_cjson;
     char *topic;
@@ -44,24 +43,20 @@ void request_software_info() {
     sprintf(id_tmp, "%d",request_id);
     strcat(topic, id_tmp);
     mqtt_data_write_with_topic(send_str_s, topic);
-    //memset(send_str_s, 0, strlen(send_str_s));
     send_str_s = "";
 }
 
 void on_connect() {
-	printf("onconnect...\n");
     current_software_info = cJSON_CreateObject();
     cJSON_AddItemToObject(current_software_info, "current_sw_title",cJSON_CreateString("Initial"));
     cJSON_AddItemToObject(current_software_info, "current_sw_version",cJSON_CreateString("v0"));
     send_str_s = cJSON_PrintUnformatted(current_software_info);
     mqtt_data_write(send_str_s);
-    //memset(send_str_s, 0, strlen(send_str_s));
     send_str_s = "";
     request_software_info();
 }
 
 void get_software() {
-	printf("get_software\n");
     char *topic;
     send_str_s = malloc(10);
     send_str_s = "";
@@ -76,12 +71,10 @@ void get_software() {
     //sprintf(id_tmp, "%d",current_chunk);
     //strcat(topic, id_tmp);
     mqtt_data_write_with_topic(send_str_s, topic);
-    //memset(send_str_s, 0, strlen(send_str_s));
     send_str_s = "";
 }
 
 void on_message_data(void *pbuf) {
-	printf("on_messgae_data...\n");
     cJSON *rx_cjson;
     rx_cjson = cJSON_Parse(pbuf);
     software_info = cJSON_GetObjectItem(rx_cjson, "shared");
@@ -95,7 +88,6 @@ void on_message_data(void *pbuf) {
         send_str_s = cJSON_PrintUnformatted(current_software_info);
         mqtt_data_write(send_str_s);
         sleep(1);
-        //memset(send_str_s, 0, strlen(send_str_s));
     	send_str_s = "";
 
         software_request_id++;
@@ -103,7 +95,6 @@ void on_message_data(void *pbuf) {
         software_data = malloc(target_software_length);
         get_software();
     }
-	printf("on_messgae_data end...\n");
 }
 
 int verify_checksum(char *software_data, char *checksum_alg, char *checksum) {
@@ -136,7 +127,7 @@ int verify_checksum(char *software_data, char *checksum_alg, char *checksum) {
 
 }
 
-long get_file_size(FILE *filename)
+long get_file_size(char *filename)
 {
 	long n;
 	FILE *fp1 = fopen(filename,"r");
@@ -170,7 +161,6 @@ void process_software() {
         send_str_s = cJSON_PrintUnformatted(current_software_info);
         mqtt_data_write(send_str_s);
         sleep(1);
-        //memset(send_str_s, 0, strlen(send_str_s));
     	send_str_s = "";
         software_received = 1;
     } else {
@@ -179,14 +169,12 @@ void process_software() {
         send_str_s = cJSON_PrintUnformatted(current_software_info);
         mqtt_data_write(send_str_s);
         sleep(1);
-        //memset(send_str_s, 0, strlen(send_str_s));
     	send_str_s = "";
         request_software_info();
     }
 }
 
 void on_message_bin() {
-	printf("on_messgae_bin...\n");
         process_software();
 }
 
@@ -217,16 +205,13 @@ int copy_by_block(const char *dest_file_name, const char *src_file_name) {//ok
 
 
 void *update_thread() {
-	printf("update_thread enter...\n");
     while (1) {
         if (software_received == 1)
         {
-	    printf("software_received...\n");
             cJSON_ReplaceItemInObject(current_software_info, SW_STATE_ATTR, cJSON_CreateString("UPDATING"));
             send_str_s = cJSON_PrintUnformatted(current_software_info);
             mqtt_data_write(send_str_s);
             sleep(1);
-            //memset(send_str_s, 0, strlen(send_str_s));
     	    send_str_s = "";
 
             char *filename;
@@ -236,7 +221,6 @@ void *update_thread() {
 	    command = malloc(30);
 	    strcpy(command, "chmod 777 ");
 	    strcat(command,filename);
-	    printf("command is %s\n",command);
 	    system(command);
 	    system("rm tmpfile");
 	    printf("saved file sucess...\n");
@@ -252,14 +236,12 @@ void *update_thread() {
             sleep(1);
         }
        sleep(1);
-//      printf("in update_thread...\n"); 
     }
 }
 
 void init_software_client() {
 
      on_connect();
-//	get_software();
     pthread_t thread_ID;
     pthread_create(&thread_ID, NULL, &update_thread, NULL);
     pthread_detach(thread_ID);
