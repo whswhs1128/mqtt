@@ -20,8 +20,8 @@ char *send_str_s;
 static int chunk_size;
 static int request_id;
 static int software_request_id;
-cJSON *current_software_info;
-cJSON *software_info;
+static cJSON *current_software_info;
+static cJSON *software_info;
 
 char *software_data;
 static int target_software_length;
@@ -227,8 +227,9 @@ void *update_thread() {
 
             cJSON_Delete(current_software_info);
             current_software_info = cJSON_CreateObject();
-            cJSON_AddItemToObject(current_software_info, "current_sw_title",cJSON_GetObjectItem(software_info,SW_TITLE_ATTR));
-            cJSON_AddItemToObject(current_software_info, "current_sw_version",cJSON_GetObjectItem(software_info,SW_VERSION_ATTR));
+	    cJSON_AddItemToObject(current_software_info, "current_sw_title",cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_TITLE_ATTR)->valuestring));
+	    cJSON_AddItemToObject(current_software_info, "current_sw_version",cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_VERSION_ATTR)->valuestring));
+            cJSON_AddItemToObject(current_software_info, SW_STATE_ATTR,cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_VERSION_ATTR)->valuestring));
             send_str_s = cJSON_PrintUnformatted(current_software_info);
             mqtt_data_write(send_str_s);
     	    send_str_s = "";
