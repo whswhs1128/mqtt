@@ -67,6 +67,7 @@ void get_software() {
     send_str_s = "";
     topic = malloc(25);
     strcpy(topic, "v2/sw/request/1/chunk/0");
+    //strcpy(topic, "v2/sw/request/");
     //char *id_tmp;
     //id_tmp = malloc(16);
     //sprintf(id_tmp, "%d",software_request_id);
@@ -127,26 +128,43 @@ int verify_checksum(char *software_data, char *checksum_alg, char *checksum) {
     }
     
     
-    Compute_data_md5(software_data, strlen(software_data), md5_str);
+    Compute_file_md5(software_data, md5_str);
     printf("compute md5 is %s\n",md5_str);
     if(strcmp(checksum, md5_str) == 0)return 1;
 
+    return 0;
+
 }
+
+long get_file_size(FILE *filename)
+{
+	long n;
+	FILE *fp1 = fopen(filename,"r");
+	fpos_t fpos; //当前位置
+	fgetpos(fp1, &fpos); //获取当前位置
+	fseek(fp1, 0, SEEK_END);
+	n = ftell(fp1);
+	fsetpos(fp1,&fpos); //恢复之前的位置
+	return n;
+}
+
 
 void process_software() {
     cJSON_ReplaceItemInObject(current_software_info, SW_STATE_ATTR, cJSON_CreateString("DOWNLOADED"));
     send_str_s = cJSON_PrintUnformatted(current_software_info);
-	printf("process_software:send_str_s is %s\n",send_str_s);
     mqtt_data_write(send_str_s);
     sleep(1);
-    //memset(send_str_s, 0, strlen(send_str_s));
     send_str_s = "";
-    
+   
+//    long file_size;
+//    file_size = get_file_size("tmpfile");
+//    printf("filesize is %ld\n",file_size);
     int verification_result;
-    verification_result = verify_checksum(software_data,cJSON_GetObjectItem(software_info,SW_CHECKSUM_ALG_ATTR)->valuestring, 
+    verification_result = verify_checksum("tmpfile",cJSON_GetObjectItem(software_info,SW_CHECKSUM_ALG_ATTR)->valuestring,
                                                         cJSON_GetObjectItem(software_info,SW_CHECKSUM_ATTR)->valuestring);
 
     if(verification_result) {
+    //if(file_size == cJSON_GetObjectItem(software_info,SW_SIZE_ATTR)->valueint) {
         printf("Checksum verified!\n");
         cJSON_ReplaceItemInObject(current_software_info, SW_STATE_ATTR, cJSON_CreateString("VERIFIED"));
         send_str_s = cJSON_PrintUnformatted(current_software_info);
@@ -167,22 +185,36 @@ void process_software() {
     }
 }
 
-void on_message_bin(void *pbuf) {
+void on_message_bin() {
 	printf("on_messgae_bin...\n");
-    char *software_data_tmp;
-    software_data_tmp = malloc(strlen(pbuf));
-    strcpy(software_data_tmp, pbuf);
-    strcpy(software_data, software_data_tmp);
-    current_chunk++;
-    if (strlen(software_data) == target_software_length)
-    {
         process_software();
-    } else {
-        get_software();
-    }
-    
-
 }
+
+int copy_by_block(const char *dest_file_name, const char *src_file_name) {//ok
+    FILE *fp1 = fopen(dest_file_name,"w");
+    FILE *fp2 = fopen(src_file_name,"r");
+    if(fp1 == NULL) {
+        perror("fp1:");
+        return -1;
+    }
+    if(fp2 == NULL) {
+        perror("fp2:");
+        return -1;
+    }
+    void *buffer = (void *)malloc(2);
+    int cnt = 0;
+    while(1) {
+        int op = fread(buffer,1,1,fp2);
+        if(op <= 0) break;
+        fwrite(buffer,1,1,fp1);
+        cnt++;
+    }
+    free(buffer);
+    fclose(fp1);
+    fclose(fp2);
+    return cnt;
+}
+
 
 void *update_thread() {
 	printf("update_thread enter...\n");
@@ -199,9 +231,13 @@ void *update_thread() {
 
             char *filename;
             filename = cJSON_GetObjectItem(software_info,SW_TITLE_ATTR)->valuestring;
-            FILE *fp = fopen(filename, "wb");
-            fwrite(software_data, strlen(software_data), 1, fp);
-            fclose(fp);
+	    copy_by_block(filename, "tmpfile");
+	    char *command;
+	    command = malloc(30);
+	    strcpy(command, "chmod 777 ");
+	    strcat(command,filename);
+	    printf("command is %s\n",command);
+	    system(command);
 	    printf("saved file sucess...\n");
 
             cJSON_Delete(current_software_info);
@@ -210,7 +246,6 @@ void *update_thread() {
             cJSON_AddItemToObject(current_software_info, "current_sw_version",cJSON_GetObjectItem(software_info,SW_VERSION_ATTR));
             send_str_s = cJSON_PrintUnformatted(current_software_info);
             mqtt_data_write(send_str_s);
-            //memset(send_str_s, 0, strlen(send_str_s));
     	    send_str_s = "";
             software_received = 0;
             sleep(1);

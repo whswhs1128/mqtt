@@ -30,6 +30,7 @@
 #define MQTT_USER "0eQo1wxhO9YEKMQf83X4"				//用户名
 #define MQTT_PASS "cec123"			//密码
 #define MQTT_CLIENT_ID "17849359"		//客户端标识
+typedef unsigned char   byte;
 
 char *read_token_from_hardware();
 typedef struct {
@@ -235,8 +236,26 @@ void mqtt_data_rx_cb(void *pbuf, int len)
 // 接收二进制回调函数
 void mqtt_data_rx_bin(void *pbuf, int len) 
 {
-    printf("rx_cb_bin is %s\n",pbuf);
-    on_message_bin(pbuf);
+	unsigned char tmp[len];
+	memcpy(tmp, pbuf, len);
+
+	char *test;
+	test = malloc(len * 2);
+	char *tmp_str;
+	tmp_str = malloc(4);
+	int i;
+	FILE * fp;
+	fp = fopen ("tmpfile", "w+");
+	for(i =0; i< len; i++) {
+//		sprintf(tmp_str, "%c",tmp[i]);
+//		strcat(test,tmp_str);
+		fprintf(fp,"%c",tmp[i]);
+	}
+	fclose(fp);
+	//system("chmod 777 tmpfile");
+//	printf("test is %s\n",test);
+
+	on_message_bin(test);
 }
 
 int mqtt_data_write(char *pbuf)

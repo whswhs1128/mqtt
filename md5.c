@@ -208,17 +208,17 @@ int Compute_data_md5(unsigned char *data, unsigned int len,unsigned char *md5_st
     md5_str[MD5_STR_LEN] = '\0'; // add end
 }
 
-#if 0
+#if 1
 int Compute_file_md5(const char *file_path, char *md5_str)
 {
   int i;
-  int fd;
+  FILE *fd;
   int ret;
   unsigned char data[READ_DATA_SIZE];
   unsigned char md5_value[MD5_SIZE];
   MD5_CTX md5;
 
-  fd = open(file_path, O_RDONLY);
+  fd = fopen(file_path, "rb");
   if (-1 == fd)
   {
     perror("open");
@@ -230,7 +230,8 @@ int Compute_file_md5(const char *file_path, char *md5_str)
 
   while (1)
   {
-    ret = read(fd, data, READ_DATA_SIZE);
+    //ret = read(fd, data, READ_DATA_SIZE);
+    ret = fread(data,1,READ_DATA_SIZE,fd);
     if (-1 == ret)
     {
       perror("read");
@@ -245,7 +246,7 @@ int Compute_file_md5(const char *file_path, char *md5_str)
     }
   }
 
-  close(fd);
+  fclose(fd);
 
   MD5Final(&md5, md5_value);
 

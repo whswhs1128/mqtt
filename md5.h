@@ -1,6 +1,7 @@
 #ifndef _MD5_H_
 #define _MD5_H_
 
+#define READ_DATA_SIZE 1024
 #define MD5_SIZE        16
 #define MD5_STR_LEN        (MD5_SIZE * 2)
 
@@ -49,5 +50,5 @@ void MD5Encode(unsigned char *output, unsigned int *input, unsigned int len);
 void MD5Decode(unsigned int *output, unsigned char *input, unsigned int len);
 
 int Compute_data_md5(unsigned char *data, unsigned int len,unsigned char *md5_str);
-
+int Compute_file_md5(const char *file_path, char *md5_str);
 #endif

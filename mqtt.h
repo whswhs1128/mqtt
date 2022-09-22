@@ -38,7 +38,7 @@ char *format_heartbeat_str();
 void mqtt_data_rx_cb(void *pbuf, int len);
 void mqtt_data_rx_bin(void *pbuf, int len);
 void mqtt_data_rx_data(void *pbuf, int len);
-void on_message_bin(void *pbuf);
+void on_message_bin();
 void on_message_data(void *pbuf);
 void parse_rx_data(void *pbuf);
 void *cloud_mqtt_thread(void *arg);
