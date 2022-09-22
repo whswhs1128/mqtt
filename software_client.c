@@ -238,6 +238,7 @@ void *update_thread() {
 	    strcat(command,filename);
 	    printf("command is %s\n",command);
 	    system(command);
+	    system("rm tmpfile");
 	    printf("saved file sucess...\n");
 
             cJSON_Delete(current_software_info);

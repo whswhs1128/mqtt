@@ -19,4 +19,4 @@ $(targets):$(IOT_OBJS)
 
 clean:
 	rm -f *.o $(targets)
-
+	rm ipc_ota tmpfile

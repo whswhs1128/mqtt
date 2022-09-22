@@ -21,7 +21,7 @@
 
 
 #define MQTT_TOPIC_SIZE     (128)		//订阅和发布主题长度
-#define MQTT_BUF_SIZE       (8 * 1024) 	//接收后发送缓冲区大小
+#define MQTT_BUF_SIZE       (1024 * 1024) 	//接收后发送缓冲区大小
 
 //#define MQTT_HOST "192.168.1.20"		//ip地址
 #define MQTT_HOST "10.41.10.37"		//ip地址
