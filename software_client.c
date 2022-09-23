@@ -17,15 +17,11 @@
 #define TOPIC_HEAD              "v1/devices/me/attributes/request/"
 #define CURRENT_VERSION		"V1.0.0.0"
 char *send_str_s;
-static int chunk_size;
 static int request_id;
 static int software_request_id;
 static cJSON *current_software_info;
 static cJSON *software_info;
 
-char *software_data;
-static int target_software_length;
-static int chunk_count;
 static int current_chunk;
 static int software_received;
 
@@ -85,7 +81,6 @@ void on_message_data(void *pbuf) {
     !strcmp(cJSON_GetObjectItem(software_info,"sw_version")->valuestring, cJSON_GetObjectItem(current_software_info,"current_sw_version")->valuestring)==0
     ) {
         printf("Software is not the same\n");
-    	software_data = "";
         current_chunk = 0;
         cJSON_AddItemToObject(current_software_info, SW_STATE_ATTR,cJSON_CreateString("DOWNLOADING"));
         send_str_s = cJSON_PrintUnformatted(current_software_info);
@@ -94,8 +89,6 @@ void on_message_data(void *pbuf) {
     	send_str_s = "";
 
         software_request_id++;
-        target_software_length = cJSON_GetObjectItem(software_info,"sw_size")->valueint;
-        software_data = malloc(target_software_length);
         get_software();
     }
 }
@@ -122,7 +115,7 @@ int verify_checksum(char *software_data, char *checksum_alg, char *checksum) {
     }
     
     
-    Compute_file_md5(software_data, md5_str);
+    Compute_file_md5(, md5_str);
     //printf("compute md5 is %s\n",md5_str);
     if(strcmp(checksum, md5_str) == 0)return 1;
 
