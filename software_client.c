@@ -79,8 +79,8 @@ void on_message_data(void *pbuf) {
     rx_cjson = cJSON_Parse(pbuf);
     software_info = cJSON_GetObjectItem(rx_cjson, "shared");
     if(!strcmp(cJSON_GetObjectItem(software_info,"sw_title")->valuestring, cJSON_GetObjectItem(current_software_info,"current_sw_title")->valuestring)==0 ||
-    !strcmp(cJSON_GetObjectItem(software_info,"sw_version")->valuestring, cJSON_GetObjectItem(current_software_info,"current_sw_version")->valuestring)==0
-    ) {
+    !strcmp(cJSON_GetObjectItem(software_info,"sw_version")->valuestring, cJSON_GetObjectItem(current_software_info,"current_sw_version")->valuestring)==0) 
+    {
         printf("Software is not the same\n");
         current_chunk = 0;
         cJSON_AddItemToObject(current_software_info, SW_STATE_ATTR,cJSON_CreateString("DOWNLOADING"));
@@ -137,7 +137,7 @@ long get_file_size(char *filename)
 }
 
 
-void process_software() {
+void on_message_bin() {
     cJSON_ReplaceItemInObject(current_software_info, SW_STATE_ATTR, cJSON_CreateString("DOWNLOADED"));
     send_str_s = cJSON_PrintUnformatted(current_software_info);
     mqtt_data_write(send_str_s);
@@ -149,7 +149,7 @@ void process_software() {
 //    printf("filesize is %ld\n",file_size);
     int verification_result;
     verification_result = verify_checksum("tmpfile",cJSON_GetObjectItem(software_info,SW_CHECKSUM_ALG_ATTR)->valuestring,
-                                                        cJSON_GetObjectItem(software_info,SW_CHECKSUM_ATTR)->valuestring);
+                                                    cJSON_GetObjectItem(software_info,SW_CHECKSUM_ATTR)->valuestring);
 
     if(verification_result) {
     //if(file_size == cJSON_GetObjectItem(software_info,SW_SIZE_ATTR)->valueint) {
@@ -172,9 +172,6 @@ void process_software() {
     }
 }
 
-void on_message_bin() {
-    process_software();
-}
 
 int copy_by_block(const char *dest_file_name, const char *src_file_name) {//ok
     FILE *fp1 = fopen(dest_file_name,"w");
