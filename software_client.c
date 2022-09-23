@@ -43,7 +43,8 @@ void request_software_info() {
 }
 
 void on_connect() {
-	if(!cJSON_GetArraySize(current_software_info)) {
+	if(!cJSON_GetArraySize(current_software_info))
+    {
 		current_software_info = cJSON_CreateObject();
 		cJSON_AddItemToObject(current_software_info, "current_sw_title",cJSON_CreateString("ipc_ota"));
 		cJSON_AddItemToObject(current_software_info, "current_sw_version",cJSON_CreateString(CURRENT_VERSION));
@@ -166,13 +167,13 @@ void process_software() {
         mqtt_data_write(send_str_s);
         sleep(1);
     	send_str_s = "";
-	system("rm tmpfile");
+	    system("rm tmpfile");
         //request_software_info();
     }
 }
 
 void on_message_bin() {
-        process_software();
+    process_software();
 }
 
 int copy_by_block(const char *dest_file_name, const char *src_file_name) {//ok
@@ -213,19 +214,19 @@ void *update_thread() {
 
             char *filename;
             filename = cJSON_GetObjectItem(software_info,SW_TITLE_ATTR)->valuestring;
-	    copy_by_block(filename, "tmpfile");
-	    char *command;
-	    command = malloc(30);
-	    strcpy(command, "chmod 777 ");
-	    strcat(command,filename);
-	    system(command);
-	    system("rm tmpfile");
-	    printf("saved file sucess...\n");
+	        copy_by_block(filename, "tmpfile");
+	        char *command;
+	        command = malloc(30);
+	        strcpy(command, "chmod 777 ");
+	        strcat(command,filename);
+	        system(command);
+	        system("rm tmpfile");
+	        printf("saved file sucess...\n");
 
 //            cJSON_Delete(current_software_info);
 //            current_software_info = cJSON_CreateObject();
-	    cJSON_ReplaceItemInObject(current_software_info, "current_sw_title",cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_TITLE_ATTR)->valuestring));
-	    cJSON_ReplaceItemInObject(current_software_info, "current_sw_version",cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_VERSION_ATTR)->valuestring));
+	        cJSON_ReplaceItemInObject(current_software_info, "current_sw_title",cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_TITLE_ATTR)->valuestring));
+	        cJSON_ReplaceItemInObject(current_software_info, "current_sw_version",cJSON_CreateString(cJSON_GetObjectItem(software_info,SW_VERSION_ATTR)->valuestring));
             cJSON_ReplaceItemInObject(current_software_info, SW_STATE_ATTR,cJSON_CreateString("UPDATED"));
             send_str_s = cJSON_PrintUnformatted(current_software_info);
             mqtt_data_write(send_str_s);
@@ -245,7 +246,7 @@ void init_software_client() {
     pthread_detach(thread_ID);
 
     while(1) {
-	on_connect();
-	sleep(60);
+	    on_connect();
+	    sleep(60);
     }
 }
