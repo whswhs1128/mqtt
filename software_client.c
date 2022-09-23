@@ -230,7 +230,11 @@ void *update_thread() {
     	    send_str_s = "";
             software_received = 0;
             sleep(1);
-        }
+	    command = malloc(30);
+	    strcpy(command, "./");
+	    strcat(command,filename);
+	    system(command);
+	}
        sleep(2);
     }
 }
