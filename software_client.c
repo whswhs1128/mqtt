@@ -116,7 +116,7 @@ int verify_checksum(char *software_data, char *checksum_alg, char *checksum) {
     }
     
     
-    Compute_file_md5(, md5_str);
+    Compute_file_md5(software_data, md5_str);
     //printf("compute md5 is %s\n",md5_str);
     if(strcmp(checksum, md5_str) == 0)return 1;
 
