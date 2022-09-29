@@ -77,6 +77,12 @@ void get_software() {
 void on_message_data(void *pbuf) {
     cJSON *rx_cjson;
     rx_cjson = cJSON_Parse(pbuf);
+
+    if(!cJSON_GetArraySize(rx_cjson)) {
+        sleep(5);
+        return;
+    }
+
     software_info = cJSON_GetObjectItem(rx_cjson, "shared");
     if(!strcmp(cJSON_GetObjectItem(software_info,"sw_title")->valuestring, cJSON_GetObjectItem(current_software_info,"current_sw_title")->valuestring)==0 ||
     !strcmp(cJSON_GetObjectItem(software_info,"sw_version")->valuestring, cJSON_GetObjectItem(current_software_info,"current_sw_version")->valuestring)==0) 
