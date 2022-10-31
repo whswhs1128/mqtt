@@ -27,7 +27,7 @@
 #define MQTT_HOST "10.41.10.37"		//ip地址
 #define MQTT_PORT 1883					//端口号
 //#define MQTT_USER "JDwski43V8tuNkZHVn2L"				//用户名
-#define MQTT_USER "0eQo1wxhO9YEKMQf83X4"				//用户名
+#define MQTT_USER "OEUQFdJv6NUPEAHXfGL5"				//用户名
 #define MQTT_PASS "cec123"			//密码
 #define MQTT_CLIENT_ID "17849359"		//客户端标识
 typedef unsigned char   byte;
@@ -136,8 +136,8 @@ int mqtt_device_connect(Cloud_MQTT_t *piot_mqtt)
     }
     data.MQTTVersion = 3;
     data.clientID.cstring = MQTT_CLIENT_ID;
-    data.username.cstring = MQTT_USER;
-//    data.username.cstring = read_token_from_hardware();
+//    data.username.cstring = MQTT_USER;
+    data.username.cstring = read_token_from_hardware();
     data.password.cstring = MQTT_PASS;
     data.keepAliveInterval = 30;
     data.cleansession = 0;
@@ -238,7 +238,8 @@ void mqtt_data_rx_bin(void *pbuf, int len)
 
 	int i;
 	FILE * fp;
-	fp = fopen ("tmpfile", "w+");
+	fp = fopen ("/opt/custom/tmpfile", "w+");
+	//fp = fopen ("tmpfile", "w+");
 	for(i =0; i< len; i++) {
 		fprintf(fp,"%c",tmp[i]);
 	}

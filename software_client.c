@@ -154,7 +154,7 @@ void on_message_bin() {
 //    file_size = get_file_size("tmpfile");
 //    printf("filesize is %ld\n",file_size);
     int verification_result;
-    verification_result = verify_checksum("tmpfile",cJSON_GetObjectItem(software_info,SW_CHECKSUM_ALG_ATTR)->valuestring,
+    verification_result = verify_checksum("/opt/custom/tmpfile",cJSON_GetObjectItem(software_info,SW_CHECKSUM_ALG_ATTR)->valuestring,
                                                     cJSON_GetObjectItem(software_info,SW_CHECKSUM_ATTR)->valuestring);
 
     if(verification_result) {
@@ -217,13 +217,17 @@ void *update_thread() {
 
             char *filename;
             filename = cJSON_GetObjectItem(software_info,SW_TITLE_ATTR)->valuestring;
-	        copy_by_block(filename, "tmpfile");
+	    char *filename_full;
+	    filename_full = malloc(30);
+	    strcpy(filename_full,"/opt/custom/");
+	    strcat(filename_full,filename);
+	        copy_by_block(filename_full, "/opt/custom/tmpfile");
 	        char *command;
 	        command = malloc(30);
 	        strcpy(command, "chmod 777 ");
-	        strcat(command,filename);
+	        strcat(command,filename_full);
 	        system(command);
-	        system("rm tmpfile");
+	        system("rm /opt/custom/tmpfile");
 	        printf("saved file sucess...\n");
 
 //            cJSON_Delete(current_software_info);
@@ -237,8 +241,8 @@ void *update_thread() {
             software_received = 0;
             sleep(1);
 	    command = malloc(30);
-	    strcpy(command, "./");
-	    strcat(command,filename);
+	    strcpy(command, "/");
+	    strcat(command,filename_full);
 	    system(command);
 	}
        sleep(2);

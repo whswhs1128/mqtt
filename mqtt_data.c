@@ -14,8 +14,8 @@ char *send_str;
 char *device_token;
 char *json_file_read();
 
-#define HW_JS_INFO "hardware.json"
-#define MEM_JS_INFO "memory.json"
+#define HW_JS_INFO "/opt/custom/hardware.json"
+#define MEM_JS_INFO "/opt/custom/memory.json"
 #define PRODUCT_HEAD "CEC0-AS0000-"
 
 char *formate_productid()
