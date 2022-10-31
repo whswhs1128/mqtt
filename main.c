@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     while(!get_burning_info_from_file()) {
 	    printf("before start..\n");
 	    start_udp_client();
-	    sleep(3);
+	    sleep(5);
     }
 
     pthread_create(&thread_ID, NULL, &cloud_mqtt_thread, NULL);
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	    }
 	    mqtt_data_write(send_str, strlen(send_str), 0);
 	    memset(send_str,0,strlen(send_str));
-	    sleep(10);
+	    sleep(65);
     }
 
     return 0;

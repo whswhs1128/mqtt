@@ -184,7 +184,7 @@ void iot_yield(Cloud_MQTT_t *piot_mqtt)
         printf("IOT_STATUS_DROP\n");
         mqtt_device_disconnect(piot_mqtt);
         gateway.iotstatus = IOT_STATUS_LOGIN;
-        usleep(1000);
+        sleep(30);
         break;
         default:
         break;
