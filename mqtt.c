@@ -25,7 +25,7 @@
 
 #define MQTT_HOST "10.41.10.37"		//ip地址
 #define MQTT_PORT 1883					//端口号
-#define MQTT_USER "ommlJRJODQeeVSyVmIaw"				//用户名
+#define MQTT_USER "d3zmE342oXBSqPM303Pt"				//用户名
 #define MQTT_PASS "cec123"			//密码
 #define MQTT_CLIENT_ID "17849359"		//客户端标识
 
@@ -126,7 +126,7 @@ int mqtt_device_connect(Cloud_MQTT_t *piot_mqtt)
     }
     data.MQTTVersion = 3;
     data.clientID.cstring = MQTT_CLIENT_ID;
-//    data.username.cstring = MQTT_USER;
+    //data.username.cstring = MQTT_USER;
     data.username.cstring = read_token_from_hardware();
     data.password.cstring = MQTT_PASS;
     data.keepAliveInterval = 30;

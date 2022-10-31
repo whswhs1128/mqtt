@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     pthread_create(&thread_ID, NULL, &cloud_mqtt_thread, NULL);
     pthread_detach(thread_ID);
 
-
+    system("/opt/custom/mqtt_ota_demo &");
     while (1) {
 	    if(!get_activate_state()) {
 		    send_str = format_first_init();
