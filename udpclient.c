@@ -8,7 +8,7 @@
 #include "pthread.h"
 #include <unistd.h>
 
-#define HOST_IP "192.168.1.104"
+#define HOST_IP "192.168.16.104"
 const int PORT = 1777;
 int device_id_flag;
 int date_flag;
